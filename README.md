@@ -1,3 +1,7 @@
 ## Covid Tracker
 
-See dashboard in action at: https://rbridges.shinyapps.io/Covid_tracker/
+This R Shiny dashboard presents Covid infection, death, and vaccination data extracted from the cdc.data.gov api. Two pages can be accessed by clicking on their sidebar tabs on the left-hand side of the display.  The first exhibits line graphs of both daily rates and cumulative counts of infections, deaths, and vaccinations in each state as well the nation as a whole.  The daily vaccinations graph presents quantities of first doses, second doses, and booster doses delivered.  Each of the daily rate graphs contain both daily rate and 7 day moving average traces, either of which can be hidden by clicking on their respective series in the legend.  The second page exhibits a choropleth (map graph) that quantifies the percentage of residents in each state that have been fully vaccinated (defined as those who have received a second vaccine dose). 
+
+The death and infection graphs pull data from the 'United States COVID-19 Cases and Deaths by State over Time' data set (https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36) while the vaccination graphs pull data from the 'COVID-19 Vaccination Trends in the United States,National and Jurisdictional' data set (https://data.cdc.gov/Vaccinations/COVID-19-Vaccination-Trends-in-the-United-States-N/rh2h-3yt2). The dashboard automatically updates itself every 24 hours using the reactiveFileReader function in lines 126 and 135 of the code.
+
+See the dashboard in action at: https://rbridges.shinyapps.io/Covid_tracker/
