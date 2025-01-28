@@ -140,9 +140,8 @@ server <- (function(input, output, session) {
     )
     #show total covid cases of US or individual state depending on selected region input
     output$newvaccinesplot <- renderPlotly({
-        vax.df <- dfvax()
-        # convert date character to date data type
-        vax.df$Date <- as.Date.character(vax.df$Date, "%m/%d/%Y")
+      # convert date character to date data type
+        vax.df <- dfvax() %>% mutate(Date = as.Date.character(Date, "%m/%d/%Y"))
         # filter out entries that are not one of 50 US states or DC
         vax.df <- vax.df %>% filter(!Location %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         # if input region is US, group by date and sum first, second, and booster vaccinations of every state for every date
@@ -219,9 +218,7 @@ server <- (function(input, output, session) {
     
     #show daily covid cases of US or individual state depending on selected region input
     output$newcasesplot <- renderPlotly({
-        covid.df <- dfcase()
-        # covid.df <- merge(covid.df, cents[,c("abbr", "full")], by.x = "state", by.y = "abbr")
-        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
+        covid.df <- dfcase() %>% mutate(end_date = as.Date.character(end_date, "%m/%d/%Y"))
         covid.df <- covid.df %>% 
             filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
@@ -281,8 +278,7 @@ server <- (function(input, output, session) {
     })    
     #show daily covid deaths of US or individual state depending on selected region input
     output$newdeathsplot <- renderPlotly({
-        covid.df <- dfcase()
-        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
+        covid.df <- dfcase() %>% mutate(end_date = as.Date.character(end_date, "%m/%d/%Y"))
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
             covid.df.US1 <- covid.df %>% group_by(end_date) %>% summarize(new_deaths = sum(new_deaths))
@@ -341,8 +337,7 @@ server <- (function(input, output, session) {
     })
     #show total covid vaccinations of US or individual state depending on selected region input
     output$totalvaxplot <- renderPlotly({
-        vax.df <- dfvax()
-        vax.df$Date <- as.Date.character(vax.df$Date, "%m/%d/%Y")
+        vax.df <- dfvax() %>% mutate(Date = as.Date.character(Date, "%m/%d/%Y"))
         vax.df <- vax.df %>% filter(!Location %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
             vax.df %>% filter(date_type == "Admin") %>% group_by(Date) %>% summarize(Second_Dose = sum(Series_Complete_Cumulative), First_Dose = sum(Admin_Dose_1_Cumulative), Booster = sum(Booster_Cumulative))%>%
@@ -399,8 +394,7 @@ server <- (function(input, output, session) {
     })
     #show total covid cases of US or individual state depending on selected region input
     output$totalcasesplot <- renderPlotly({
-        covid.df <- dfcase()
-        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
+        covid.df <- dfcase() %>% mutate(end_date = as.Date.character(end_date, "%m/%d/%Y"))
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
             covid.df %>% select(end_date, tot_cases) %>% group_by(end_date) %>% summarize(total_cases = sum(tot_cases))%>%
@@ -447,8 +441,7 @@ server <- (function(input, output, session) {
     })
     #show total covid deaths of US or individual state depending on selected region input
     output$totaldeathplot <- renderPlotly({
-        covid.df <- dfcase()
-        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
+        covid.df <- dfcase() %>% mutate(end_date = as.Date.character(end_date, "%m/%d/%Y"))
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
             covid.df.US <- covid.df %>% select(end_date, tot_deaths) %>% group_by(end_date) %>% summarize(total_deaths = sum(tot_deaths)) %>%
@@ -496,8 +489,7 @@ server <- (function(input, output, session) {
     })
     # Value box for latest total covid vaccinations
     output$mydata <- renderValueBox({
-        vax.df <- dfvax()
-        vax.df$Date <- as.Date.character(vax.df$Date, "%m/%d/%Y")
+        vax.df <- dfvax() %>% mutate(Date = as.Date.character(Date, "%m/%d/%Y"))
         vax.df <- vax.df %>% filter(!Location %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         vax.df.US1 <- vax.df %>% filter(date_type == "Admin") %>% group_by(Date) %>% 
             summarize(Second_Dose = sum(Series_Complete_Cumulative), First_Dose = sum(Admin_Dose_1_Cumulative), Booster = sum(Booster_Cumulative)) %>% 
@@ -508,8 +500,7 @@ server <- (function(input, output, session) {
     })
     # Value box for latest total covid cases
     output$mydata2 <- renderValueBox({
-        covid.df <- dfcase()
-        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
+        covid.df <- dfcase() %>% mutate(end_date = as.Date.character(end_date, "%m/%d/%Y"))
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         covid.df.US1 <- covid.df %>% select(end_date, tot_cases) %>% group_by(end_date) %>% summarize(total_cases = sum(tot_cases)) %>% arrange(desc(end_date))
         valueBox(value = prettyNum(covid.df.US1[1,2], big.mark = ","), 
@@ -517,8 +508,7 @@ server <- (function(input, output, session) {
     })
     # Value box for latest total covid deaths
     output$mydata3 <- renderValueBox({
-        covid.df <- dfcase()
-        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
+        covid.df <- dfcase()%>% mutate(end_date = as.Date.character(end_date, "%m/%d/%Y"))
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         covid.df.US1 <- covid.df %>% select(end_date, tot_deaths) %>% group_by(end_date) %>% summarize(total_deaths = sum(tot_deaths)) %>% arrange(desc(end_date))
         valueBox(value = prettyNum(covid.df.US1[1,2], big.mark = ","),
@@ -526,8 +516,7 @@ server <- (function(input, output, session) {
     })
     # Map data for map tab
     output$casemap <- renderPlot({
-        vax.df <- dfvax()
-        vax.df$Date <- as.Date.character(vax.df$Date, "%m/%d/%Y")
+        vax.df <- dfvax() %>% mutate(Date = as.Date.character(Date, "%m/%d/%Y"))
         vax.df <- vax.df %>% filter(!Location %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC", "DC"))
         vax.df <- vax.df %>% filter(Date == input$covid.month) %>% select(Location, Series_Complete_Pop_Pct)
         daily.doses.df <- left_join(states.centroids, vax.df, by=c("abbr"="Location"))
