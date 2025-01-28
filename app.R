@@ -53,7 +53,7 @@ ui <- fluidPage(
                             condition = 'input.sidebarid == "Map"',
                             #select Month of vaccination data"
                             sliderInput(inputId = "covid.month",
-                                        label = "Select Month",
+                                        label = "Select Date",
                                         min = min(dates),
                                         max = max(dates),
                                         value = max(dates),
@@ -496,7 +496,7 @@ server <- (function(input, output, session) {
             arrange(desc(Date))
         valueBox(
             value = prettyNum(vax.df.US1[1,2], big.mark = ","),
-            subtitle = "Americans Fully Vaccinated as of Yesterday")
+            subtitle = "Americans Fully Vaccinated as of March 7, 2023")
     })
     # Value box for latest total covid cases
     output$mydata2 <- renderValueBox({
@@ -504,7 +504,7 @@ server <- (function(input, output, session) {
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         covid.df.US1 <- covid.df %>% select(end_date, tot_cases) %>% group_by(end_date) %>% summarize(total_cases = sum(tot_cases)) %>% arrange(desc(end_date))
         valueBox(value = prettyNum(covid.df.US1[1,2], big.mark = ","), 
-                 subtitle = "Total COVID Cases Reported in the US as of Yesterday")
+                 subtitle = "Total COVID Cases Reported in the US as of March 10, 2023")
     })
     # Value box for latest total covid deaths
     output$mydata3 <- renderValueBox({
@@ -512,7 +512,7 @@ server <- (function(input, output, session) {
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         covid.df.US1 <- covid.df %>% select(end_date, tot_deaths) %>% group_by(end_date) %>% summarize(total_deaths = sum(tot_deaths)) %>% arrange(desc(end_date))
         valueBox(value = prettyNum(covid.df.US1[1,2], big.mark = ","),
-                 subtitle = "Total COVID Deaths Reported in the US as of Yesterday")
+                 subtitle = "Total COVID Deaths Reported in the US as of March 10, 2023")
     })
     # Map data for map tab
     output$casemap <- renderPlot({
