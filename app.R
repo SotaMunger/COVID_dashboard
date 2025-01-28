@@ -12,9 +12,8 @@ covid.vax <- read_csv('https://data.cdc.gov/api/views/rh2h-3yt2/rows.csv?accessT
 
 # turn covid vaccine dataset into data.frame and 
 covid.vax.df <- as.data.frame(covid.vax)
-dates <- unique(as.Date(covid.vax.df$Date, format = "%m/%d/%Y"))
 
-head(covid.vax.df)
+dates <- unique(as.Date(covid.vax.df$Date, format = "%m/%d/%Y"))
 
 # load maps state data
 states <- us_map()
@@ -122,13 +121,14 @@ ui <- fluidPage(
         
     )
 )
+
 # Define server logic required to draw a histogram
 server <- (function(input, output, session) {
     #covid cases dataset
     dfcase <- reactiveFileReader(
         intervalMillis = 86400000,
         session = session,
-        filePath = 'https://data.cdc.gov/api/views/9mfq-cb36/rows.csv?accessType=DOWNLOAD',
+        filePath = 'https://data.cdc.gov/api/views/pwn4-m3yp/rows.csv?accessType=DOWNLOAD',
         readFunc = read_csv
     )
     #vaccines dataset
@@ -216,17 +216,19 @@ server <- (function(input, output, session) {
         }
         
     })
+    
     #show daily covid cases of US or individual state depending on selected region input
     output$newcasesplot <- renderPlotly({
         covid.df <- dfcase()
-        covid.df$submission_date <- as.Date.character(covid.df$submission_date, "%m/%d/%Y")
+        # covid.df <- merge(covid.df, cents[,c("abbr", "full")], by.x = "state", by.y = "abbr")
+        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
         covid.df <- covid.df %>% 
             filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
-            covid.df.US1 <- covid.df %>% group_by(submission_date) %>% summarize(new_cases = sum(new_case))
+            covid.df.US1 <- covid.df %>% group_by(end_date) %>% summarize(new_cases = sum(new_cases))
             covid.df.US2 <- covid.df.US1 %>% mutate(avg_cases = rollmean(new_cases, k = 7, fill = NA))
             plot_ly(data = covid.df.US2,
-                    x = ~submission_date,
+                    x = ~end_date,
                     y = ~new_cases,
                     type = "scatter",
                     mode = "markers + lines",
@@ -247,14 +249,14 @@ server <- (function(input, output, session) {
                                     showline = TRUE,
                                     showgrid = TRUE),
                        hovermode = 'x') %>%
-                add_lines(x = ~submission_date, y = ~avg_cases, name = "7-day avg", color = I("orangered"))
+                add_lines(x = ~end_date, y = ~avg_cases, name = "7-day avg", color = I("orangered"))
         }
         else {
-            covid.df.state1 <- covid.df %>% filter(state == input$region) %>% arrange(submission_date)
-            covid.df.state2 <- covid.df.state1 %>% mutate(avg_cases = rollmean(new_case, k = 7, fill = NA))
+            covid.df.state1 <- covid.df %>% filter(state == input$region) %>% arrange(end_date)
+            covid.df.state2 <- covid.df.state1 %>% mutate(avg_cases = rollmean(new_cases, k = 7, fill = NA))
             plot_ly(data = covid.df.state2,
-                    x = ~submission_date,
-                    y = ~new_case,
+                    x = ~end_date,
+                    y = ~new_cases,
                     type = "scatter",
                     mode = "markers + lines",
                     name = "Cases"
@@ -274,19 +276,19 @@ server <- (function(input, output, session) {
                                     showline = TRUE,
                                     showgrid = TRUE),
                        hovermode = 'x') %>%
-                add_lines(x = ~submission_date, y = ~avg_cases, name = "7-day avg", color = I("orangered"))
+                add_lines(x = ~end_date, y = ~avg_cases, name = "7-day avg", color = I("orangered"))
         }
     })    
     #show daily covid deaths of US or individual state depending on selected region input
     output$newdeathsplot <- renderPlotly({
         covid.df <- dfcase()
-        covid.df$submission_date <- as.Date.character(covid.df$submission_date, "%m/%d/%Y")
+        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
-            covid.df.US1 <- covid.df %>% group_by(submission_date) %>% summarize(new_deaths = sum(new_death))
+            covid.df.US1 <- covid.df %>% group_by(end_date) %>% summarize(new_deaths = sum(new_deaths))
             covid.df.US2 <- covid.df.US1 %>% mutate(avg_deaths = rollmean(new_deaths, k = 7, fill = NA))
             plot_ly(data = covid.df.US2,
-                    x = ~submission_date,
+                    x = ~end_date,
                     y = ~new_deaths,
                     type = "scatter",
                     mode = "lines + markers",
@@ -307,14 +309,14 @@ server <- (function(input, output, session) {
                                     showline = TRUE,
                                     showgrid = TRUE),
                        hovermode = 'x') %>%
-                add_lines(x = ~submission_date, y = ~avg_deaths, name = "7-day avg", color = I("orangered"))
+                add_lines(x = ~end_date, y = ~avg_deaths, name = "7-day avg", color = I("orangered"))
         }
         else {
-            covid.df.state1 <- covid.df %>% filter(state == input$region) %>% arrange(submission_date)
-            covid.df.state2 <- covid.df.state1 %>% mutate(avg_deaths = rollmean(new_death, k = 7, fill = NA))
+            covid.df.state1 <- covid.df %>% filter(state == input$region) %>% arrange(end_date)
+            covid.df.state2 <- covid.df.state1 %>% mutate(avg_deaths = rollmean(new_deaths, k = 7, fill = NA))
             plot_ly(data = covid.df.state2,
-                    x = ~submission_date,
-                    y = ~new_death,
+                    x = ~end_date,
+                    y = ~new_deaths,
                     type = "scatter",
                     mode = "lines + markers",
                     name = "Deaths"
@@ -334,7 +336,7 @@ server <- (function(input, output, session) {
                                     showline = TRUE,
                                     showgrid = TRUE),
                        hovermode = 'x') %>%
-                add_lines(x = ~submission_date, y = ~avg_deaths, name = "7-day avg", color = I("orangered"))
+                add_lines(x = ~end_date, y = ~avg_deaths, name = "7-day avg", color = I("orangered"))
         }
     })
     #show total covid vaccinations of US or individual state depending on selected region input
@@ -398,12 +400,12 @@ server <- (function(input, output, session) {
     #show total covid cases of US or individual state depending on selected region input
     output$totalcasesplot <- renderPlotly({
         covid.df <- dfcase()
-        covid.df$submission_date <- as.Date.character(covid.df$submission_date, "%m/%d/%Y")
+        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
-            covid.df %>% select(submission_date, tot_cases) %>% group_by(submission_date) %>% summarize(total_cases = sum(tot_cases))%>%
+            covid.df %>% select(end_date, tot_cases) %>% group_by(end_date) %>% summarize(total_cases = sum(tot_cases))%>%
                 plot_ly(
-                    x = ~submission_date,
+                    x = ~end_date,
                     y = ~total_cases,
                     type="scatter",
                     mode="markers + lines"
@@ -422,9 +424,9 @@ server <- (function(input, output, session) {
                        hovermode = 'x')
         }
         else {
-            covid.df %>% filter(state == input$region) %>% arrange(submission_date) %>% 
+            covid.df %>% filter(state == input$region) %>% arrange(end_date) %>% 
                 plot_ly(
-                    x = ~submission_date,
+                    x = ~end_date,
                     y = ~tot_cases,
                     type="scatter",
                     mode="markers + lines"
@@ -446,12 +448,12 @@ server <- (function(input, output, session) {
     #show total covid deaths of US or individual state depending on selected region input
     output$totaldeathplot <- renderPlotly({
         covid.df <- dfcase()
-        covid.df$submission_date <- as.Date.character(covid.df$submission_date, "%m/%d/%Y")
+        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
         if (list(input$region) == 'US') {
-            covid.df.US <- covid.df %>% select(submission_date, tot_death) %>% group_by(submission_date) %>% summarize(total_deaths = sum(tot_death)) %>%
+            covid.df.US <- covid.df %>% select(end_date, tot_deaths) %>% group_by(end_date) %>% summarize(total_deaths = sum(tot_deaths)) %>%
                 plot_ly(
-                    x = ~submission_date,
+                    x = ~end_date,
                     y = ~total_deaths,
                     name = "Total Deaths",
                     type = "scatter",
@@ -471,10 +473,10 @@ server <- (function(input, output, session) {
                        hovermode = 'x') 
         }
         else {
-            covid.df %>% filter(state == input$region) %>% arrange(submission_date) %>% 
+            covid.df %>% filter(state == input$region) %>% arrange(end_date) %>% 
                 plot_ly(
-                    x = ~submission_date,
-                    y = ~tot_death,
+                    x = ~end_date,
+                    y = ~tot_deaths,
                     type="scatter",
                     mode="markers + lines"
                 ) %>%
@@ -507,18 +509,18 @@ server <- (function(input, output, session) {
     # Value box for latest total covid cases
     output$mydata2 <- renderValueBox({
         covid.df <- dfcase()
-        covid.df$submission_date <- as.Date.character(covid.df$submission_date, "%m/%d/%Y")
+        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
-        covid.df.US1 <- covid.df %>% select(submission_date, tot_cases) %>% group_by(submission_date) %>% summarize(total_cases = sum(tot_cases)) %>% arrange(desc(submission_date))
+        covid.df.US1 <- covid.df %>% select(end_date, tot_cases) %>% group_by(end_date) %>% summarize(total_cases = sum(tot_cases)) %>% arrange(desc(end_date))
         valueBox(value = prettyNum(covid.df.US1[1,2], big.mark = ","), 
                  subtitle = "Total COVID Cases Reported in the US as of Yesterday")
     })
     # Value box for latest total covid deaths
     output$mydata3 <- renderValueBox({
         covid.df <- dfcase()
-        covid.df$submission_date <- as.Date.character(covid.df$submission_date, "%m/%d/%Y")
+        covid.df$end_date <- as.Date.character(covid.df$end_date, "%m/%d/%Y")
         covid.df <- covid.df %>% filter(!state %in% c("PW", "BP2", "VA2", "DD2", "FM", "MH", "VI", "IH2", "MP", "GU", "US", "PR", "RP", "LTC", "AS", "FSM", "RMI", "NYC"))
-        covid.df.US1 <- covid.df %>% select(submission_date, tot_death) %>% group_by(submission_date) %>% summarize(total_deaths = sum(tot_death)) %>% arrange(desc(submission_date))
+        covid.df.US1 <- covid.df %>% select(end_date, tot_deaths) %>% group_by(end_date) %>% summarize(total_deaths = sum(tot_deaths)) %>% arrange(desc(end_date))
         valueBox(value = prettyNum(covid.df.US1[1,2], big.mark = ","),
                  subtitle = "Total COVID Deaths Reported in the US as of Yesterday")
     })
